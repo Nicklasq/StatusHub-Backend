@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: statushub-mysql
+    environment:
+      MYSQL_DATABASE: statushub
+      MYSQL_USER: statushub
+      MYSQL_PASSWORD: statushub
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    command: ["--default-authentication-plugin=mysql_native_password","--lower_case_table_names=1"]
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot || exit 1"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  dbdata:
