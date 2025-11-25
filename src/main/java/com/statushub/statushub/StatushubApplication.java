@@ -8,6 +8,7 @@ public class StatushubApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(StatushubApplication.class, args);
+        System.out.println("Statushub application started successfully.");
     }
 
 }
