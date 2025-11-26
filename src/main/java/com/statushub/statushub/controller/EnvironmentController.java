@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/environments")
-@CrossOrigin(origins = "http://localhost:5173") // tillad frontend adgang
+@CrossOrigin(origins = "*") // tillader frontend at kalde API'et
 public class EnvironmentController {
 
     private final EnvironmentService service;
@@ -28,6 +28,15 @@ public class EnvironmentController {
     public ResponseEntity<Environment> create(@RequestBody Environment environment) {
         Environment saved = service.createEnvironment(environment);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Environment> update(
+            @PathVariable Long id,
+            @RequestBody Environment updatedEnvironment
+    ) {
+        Environment updated = service.updateEnvironment(id, updatedEnvironment);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

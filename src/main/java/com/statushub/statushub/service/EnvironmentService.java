@@ -26,4 +26,15 @@ public class EnvironmentService {
     public void deleteEnvironment(Long id) {
         repository.deleteById(id);
     }
+
+    // 🔹 NY METODE: UPDATE LIGGER HERINDE
+    public Environment updateEnvironment(Long id, Environment updated) {
+        return repository.findById(id)
+                .map(env -> {
+                    env.setName(updated.getName());
+                    env.setStatus(updated.getStatus());
+                    return repository.save(env);
+                })
+                .orElseThrow(() -> new RuntimeException("Environment not found: " + id));
+    }
 }
