@@ -5,8 +5,11 @@ import com.statushub.statushub.domain.Post;
 import com.statushub.statushub.dto.PostRequest;
 import com.statushub.statushub.repository.EnvironmentRepository;
 import com.statushub.statushub.repository.PostRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -20,47 +23,60 @@ public class PostService {
         this.environments = environments;
     }
 
-    public List<Post> getAll() {
-        return posts.findAll();
-    }
-
     public List<Post> getByEnvironment(Long environmentId) {
         return posts.findByEnvironmentIdOrderByCreatedAtDesc(environmentId);
     }
 
     public Post create(PostRequest request) {
         Environment env = environments.findById(request.environmentId())
-                .orElseThrow(() -> new IllegalArgumentException("Environment not found: " + request.environmentId()));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Environment not found: " + request.environmentId()
+                ));
 
         Post post = Post.builder()
                 .title(request.title())
                 .description(request.description())
                 .type(request.type())
                 .environment(env)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         return posts.save(post);
     }
 
     public Post update(Long id, PostRequest request) {
-        Post existing = posts.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found: " + id));
-
         Environment env = environments.findById(request.environmentId())
-                .orElseThrow(() -> new IllegalArgumentException("Environment not found: " + request.environmentId()));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Environment not found: " + request.environmentId()
+                ));
 
-        existing.setTitle(request.title());
-        existing.setDescription(request.description());
-        existing.setType(request.type());
-        existing.setEnvironment(env);
-
-        return posts.save(existing);
+        return posts.findById(id)
+                .map(p -> {
+                    p.setTitle(request.title());
+                    p.setDescription(request.description());
+                    p.setType(request.type());
+                    p.setEnvironment(env);
+                    return posts.save(p);
+                })
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Post not found: " + id
+                ));
     }
 
     public void delete(Long id) {
         if (!posts.existsById(id)) {
-            throw new IllegalArgumentException("Post not found: " + id);
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Post not found: " + id
+            );
         }
         posts.deleteById(id);
+    }
+
+    public void deleteByEnvironment(Long environmentId) {
+        posts.deleteByEnvironmentId(environmentId);
     }
 }

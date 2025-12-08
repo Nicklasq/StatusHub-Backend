@@ -1,46 +1,37 @@
-    package com.statushub.statushub.domain;
+package com.statushub.statushub.domain;
 
-    import jakarta.persistence.*;
-    import jakarta.validation.constraints.NotBlank;
-    import lombok.*;
+import jakarta.persistence.*;
+import lombok.*;
 
-    import java.time.Instant;
+import java.time.LocalDateTime;
 
-    @Entity
-    @Table(name = "posts")
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public class Post {
+@Entity
+@Table(name = "posts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Post {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        @NotBlank
-        @Column(length = 120)
-        private String title;
+    @Column(nullable = false)
+    private String title;
 
-        @NotBlank
-        @Column(length = 2000)
-        private String description;
+    @Column(nullable = false, length = 4000)
+    private String description;
 
-        @NotBlank
-        @Column(length = 16)
-        private String type; // DEPLOY, PATCH, FREEZE, INFO
+    // "deployment", "incident", "info" ...
+    @Column(nullable = false)
+    private String type;
 
-        private Instant createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-        @ManyToOne(optional = false)
-        @JoinColumn(name = "environment_id")
-        private Environment environment;
-
-        @PrePersist
-        public void onCreate() {
-            if (createdAt == null) {
-                createdAt = Instant.now();
-            }
-        }
-    }
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "environment_id")
+    private Environment environment;
+}
