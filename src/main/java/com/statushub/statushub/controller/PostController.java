@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/posts")
-@CrossOrigin(origins = "*") //
+@CrossOrigin(origins = "*")
 public class PostController {
 
     private final PostService service;
@@ -22,7 +22,8 @@ public class PostController {
 
     @GetMapping
     public List<Post> getAll() {
-        return service.getAll();
+        // Hvis du har et "get all" – ikke kritisk
+        throw new UnsupportedOperationException("Use /environment/{id} instead");
     }
 
     @GetMapping("/environment/{environmentId}")
@@ -37,7 +38,8 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id, @RequestBody PostRequest request) {
+    public ResponseEntity<Post> update(@PathVariable Long id,
+                                       @RequestBody PostRequest request) {
         Post updated = service.update(id, request);
         return ResponseEntity.ok(updated);
     }

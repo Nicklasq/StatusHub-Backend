@@ -1,7 +1,6 @@
 package com.statushub.statushub.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
@@ -17,11 +16,16 @@ public class Environment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(unique = true, length = 32)
-    private String name;   // DEV, TEST, QA, PROD
+    // F.eks. "PROD", "TEST", "DEV"
+    @Column(nullable = false)
+    private String name;
 
-    @NotBlank
-    @Column(length = 16)
-    private String status; // ACTIVE, FREEZE, DOWN, UPDATING
+    // F.eks. "OK", "ISSUES", "FREEZE", "DOWN"
+    @Column(nullable = false)
+    private String status;
+
+    // Hvilken løsning/system miljøet hører til
+    // F.eks. "LEGO", "FÆTTER BR", "MATAS"
+    @Column(name = "solution_name")
+    private String solutionName;
 }

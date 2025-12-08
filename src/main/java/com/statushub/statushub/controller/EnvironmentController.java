@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/environments")
-@CrossOrigin(origins = "*") // tillader frontend at kalde API'et
+@CrossOrigin(origins = "*") // tillad frontend adgang
 public class EnvironmentController {
 
     private final EnvironmentService service;
@@ -31,11 +31,9 @@ public class EnvironmentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Environment> update(
-            @PathVariable Long id,
-            @RequestBody Environment updatedEnvironment
-    ) {
-        Environment updated = service.updateEnvironment(id, updatedEnvironment);
+    public ResponseEntity<Environment> update(@PathVariable Long id,
+                                              @RequestBody Environment environment) {
+        Environment updated = service.updateEnvironment(id, environment);
         return ResponseEntity.ok(updated);
     }
 
@@ -44,4 +42,12 @@ public class EnvironmentController {
         service.deleteEnvironment(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Hvis du senere vil have "slet hele solution", fx:
+    //
+    // @DeleteMapping("/solution/{solutionName}")
+    // public ResponseEntity<Void> deleteSolution(@PathVariable String solutionName) {
+    //     service.deleteSolution(solutionName);
+    //     return ResponseEntity.noContent().build();
+    // }
 }
