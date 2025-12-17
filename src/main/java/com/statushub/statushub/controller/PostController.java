@@ -3,6 +3,7 @@ package com.statushub.statushub.controller;
 import com.statushub.statushub.domain.Post;
 import com.statushub.statushub.dto.PostRequest;
 import com.statushub.statushub.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,14 @@ public class PostController {
         this.service = service;
     }
 
+    private boolean isAdmin(HttpServletRequest req) {
+        String role = req.getHeader("X-Role");
+        return role != null && role.equalsIgnoreCase("ADMIN");
+    }
+
     @GetMapping
     public List<Post> getAll() {
-        // Hvis du har et "get all" – ikke kritisk
-        throw new UnsupportedOperationException("Use /environment/{id} instead");
+        return service.getAll();
     }
 
     @GetMapping("/environment/{environmentId}")
@@ -32,20 +37,22 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Post> create(@RequestBody PostRequest request) {
+    public ResponseEntity<?> create(@RequestBody PostRequest request, HttpServletRequest httpReq) {
+        if (!isAdmin(httpReq)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("ADMIN only");
         Post created = service.create(request);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id,
-                                       @RequestBody PostRequest request) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody PostRequest request, HttpServletRequest httpReq) {
+        if (!isAdmin(httpReq)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("ADMIN only");
         Post updated = service.update(id, request);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest httpReq) {
+        if (!isAdmin(httpReq)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("ADMIN only");
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
