@@ -5,78 +5,61 @@ import com.statushub.statushub.domain.Post;
 import com.statushub.statushub.dto.PostRequest;
 import com.statushub.statushub.repository.EnvironmentRepository;
 import com.statushub.statushub.repository.PostRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class PostService {
 
     private final PostRepository posts;
-    private final EnvironmentRepository environments;
+    private final EnvironmentRepository envs;
 
-    public PostService(PostRepository posts, EnvironmentRepository environments) {
+    public PostService(PostRepository posts, EnvironmentRepository envs) {
         this.posts = posts;
-        this.environments = environments;
+        this.envs = envs;
+    }
+
+    public List<Post> getAll() {
+        return posts.findAll();
     }
 
     public List<Post> getByEnvironment(Long environmentId) {
-        return posts.findByEnvironmentIdOrderByCreatedAtDesc(environmentId);
+        return posts.findByEnvironmentId(environmentId);
     }
 
-    public Post create(PostRequest request) {
-        Environment env = environments.findById(request.environmentId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Environment not found: " + request.environmentId()
-                ));
+    public Post create(PostRequest req) {
+        Environment env = envs.findById(req.environmentId())
+                .orElseThrow(() -> new RuntimeException("Environment not found: " + req.environmentId()));
 
         Post post = Post.builder()
-                .title(request.title())
-                .description(request.description())
-                .type(request.type())
+                .title(req.title())
+                .description(req.description())
+                .type(req.type())
+                .createdBy(req.createdBy())
                 .environment(env)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         return posts.save(post);
     }
 
-    public Post update(Long id, PostRequest request) {
-        Environment env = environments.findById(request.environmentId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Environment not found: " + request.environmentId()
-                ));
+    public Post update(Long id, PostRequest req) {
+        Environment env = envs.findById(req.environmentId())
+                .orElseThrow(() -> new RuntimeException("Environment not found: " + req.environmentId()));
 
         return posts.findById(id)
                 .map(p -> {
-                    p.setTitle(request.title());
-                    p.setDescription(request.description());
-                    p.setType(request.type());
+                    p.setTitle(req.title());
+                    p.setDescription(req.description());
+                    p.setType(req.type());
+                    p.setCreatedBy(req.createdBy());
                     p.setEnvironment(env);
                     return posts.save(p);
                 })
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Post not found: " + id
-                ));
+                .orElseThrow(() -> new RuntimeException("Post not found: " + id));
     }
 
     public void delete(Long id) {
-        if (!posts.existsById(id)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Post not found: " + id
-            );
-        }
         posts.deleteById(id);
-    }
-
-    public void deleteByEnvironment(Long environmentId) {
-        posts.deleteByEnvironmentId(environmentId);
     }
 }
