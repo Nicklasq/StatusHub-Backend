@@ -10,4 +10,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByEnvironmentIdOrderByCreatedAtDesc(Long environmentId);
 
     void deleteByEnvironmentId(Long environmentId);
+
+    List<Post> findByEnvironmentId(Long environmentId);
 }
